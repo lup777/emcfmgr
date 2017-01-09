@@ -38,13 +38,25 @@
                     line-separator))))
 
 
-(defun emcfmgr-append-attributes (text)
+(defun emcfmgr-get-file-rights (file-name)
+  (car (nthcdr 8 (file-attributes file-name 'integer))))
+
+(defun emcfmgr-get-file-owner (file-name)
+  (let ((owner (user-login-name (car (cddr (file-attributes file-name 'integer)))))
+        (max-len 5))
+    (if (> (length owner) max-len)
+        (substring owner 0 max-len)
+      (concat (make-string (- max-len (length owner)) ? ) owner))))
+
+(defun emcfmgr-get-file-modification-time (file-name)
+  (current-time-string (car (nthcdr 5 (file-attributes file-name 'integer)))))
+
+(defun emcfmgr-append-attributes (file-name)
   "add file attributes to the begining of line"
   (concat
-   ;; access rights
-   (car (nthcdr 8 (file-attributes text 'integer))) " "
-   (user-login-name (car (cddr (file-attributes text 'integer)))) " "
-   (current-time-string (car (nthcdr 5 (file-attributes text 'integer))))))
+   (emcfmgr-get-file-rights file-name) " "
+   (emcfmgr-get-file-owner file-name) " "
+   (emcfmgr-get-file-modification-time file-name)))
 
 ;; (car (nthcdr 8 (file-attributes ".git" 'integer)))
 
@@ -68,6 +80,7 @@
     (forward-line 1)
     (if (not (search-forward " | " (line-end-position) t nil))
         (goto-char position-backup))
+    ;;(add-face-text-property (line-beginning-position) (line-end-position) '(:background "white"))
     (message "move cursor down")))
 
 (defun emcfmgr-up-arrow-handler ()
@@ -76,6 +89,7 @@
   (progn
     (forward-line -1)
     (search-forward " | " (line-end-position) t nil)
+    ;;(add-face-text-property (line-beginning-position) (line-end-position) '(:background "white"))
     (message "move cursor up")))
 
 (defun emcfmgr-enter-key-handler ()

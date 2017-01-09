@@ -14,11 +14,14 @@ Panel file manager for emacs like Midnight Commander
 
 
 LAST:
-0.2
-- creating instance "left" and "right" buffers with identical names for each instance
+0.3
+Make owner attribute field of fixed length
 
 
 HISTORY:
 
 0.1
 - moved "WAHT WAS CHANGED" to README.md
+
+0.2
+- creating instance "left" and "right" buffers with identical names for each instance
