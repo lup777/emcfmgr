@@ -1,21 +1,24 @@
 # emcfmgr
 Panel file manager for emacs like Midnight Commander
 
-
-LAST:
-9 jun 2017
-
-== WHAT WAS CHANGED ==
-- moved "WAHT WAS CHANGED" to README.md
-
 == TO DO ==
 - make second panel
 - make rules for names for panels fordiffwrent version im emc
 - make restriction for right scrolling
-
+- make colors
 
 == ISSUES ==
 
 
+== WHAT WAS CHANGED ==
+
+
+LAST:
+0.2
+- creating instance "left" and "right" buffers with identical names for each instance
+
 
 HISTORY:
+
+0.1
+- moved "WAHT WAS CHANGED" to README.md

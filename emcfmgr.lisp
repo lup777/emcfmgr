@@ -2,47 +2,47 @@
   "Insert files names into current buffer from <files-list> list"
   (if (cdr files-list)
       (progn
-	(emcfmgr-insert-hilighted-file-element
-	 (car files-list))
-	(emcfmgr-insert-list-files (cdr files-list)))
+        (emcfmgr-insert-hilighted-file-element
+         (car files-list))
+        (emcfmgr-insert-list-files (cdr files-list)))
     (emcfmgr-insert-hilighted-file-element (car files-list))))
 
 (defun emcfmgr-insert-hilighted-file-element (file-name)
   "add file element to buffer with attributes"
   (let ((print-exp
-	 (lambda (file-name)
-	   "insert text with attributes"
-	   (emsfmgr-insert-element
-	    (emcfmgr-append-attributes file-name) file-name "\n"))))
+         (lambda (file-name)
+           "insert text with attributes"
+           (emsfmgr-insert-element
+            (emcfmgr-append-attributes file-name) file-name "\n"))))
     (if (= (or
-	    (string-match "\\." file-name) ;;0 == t, nil != t
-	    1)
-	   0) ;; hidden file or not hidden
-	(if (or hidden-p
-		(string= file-name ".")
-		(string= file-name ".."))
-	    (funcall print-exp file-name))
+            (string-match "\\." file-name) ;;0 == t, nil != t
+            1)
+           0) ;; hidden file or not hidden
+        (if (or hidden-p
+                (string= file-name ".")
+                (string= file-name ".."))
+            (funcall print-exp file-name))
       (funcall print-exp file-name))))
 
 (defun emsfmgr-insert-element (attributes file-name line-separator)
   "isert line with file name, attibutes and line separator with length trancation"
   (let ((str (concat attributes " | ")))
     (insert (concat str
-		    (substring file-name
-			       (if (> (length file-name)
-				      (- right-margin (length str)))
-				   (+ left-margin margin-shift)
-				 left-margin)
-			       (min (- (+ right-margin margin-shift) (length str))
-				    (length file-name)))
-		    line-separator))))
-  
+                    (substring file-name
+                               (if (> (length file-name)
+                                      (- right-margin (length str)))
+                                   (+ left-margin margin-shift)
+                                 left-margin)
+                               (min (- (+ right-margin margin-shift) (length str))
+                                    (length file-name)))
+                    line-separator))))
+
 
 (defun emcfmgr-append-attributes (text)
   "add file attributes to the begining of line"
   (concat
    ;; access rights
-   (car (nthcdr 8 (file-attributes text 'integer))) " " 
+   (car (nthcdr 8 (file-attributes text 'integer))) " "
    (user-login-name (car (cddr (file-attributes text 'integer)))) " "
    (current-time-string (car (nthcdr 5 (file-attributes text 'integer))))))
 
@@ -67,7 +67,7 @@
   (let ((position-backup (point)))
     (forward-line 1)
     (if (not (search-forward " | " (line-end-position) t nil))
-	(goto-char position-backup))
+        (goto-char position-backup))
     (message "move cursor down")))
 
 (defun emcfmgr-up-arrow-handler ()
@@ -92,7 +92,7 @@
   (progn
     (beginning-of-line)
     (if (search-forward " | " (line-end-position) t nil)
-	(buffer-substring (point) (line-end-position))
+        (buffer-substring (point) (line-end-position))
       nil)))
 
 (defun emcfmgr-h-key-handler ()
@@ -100,12 +100,12 @@
   (interactive)
   (progn
     (if hidden-p
-	(setq hidden-p nil)
+        (setq hidden-p nil)
       (setq hidden-p t))
     (emcfmgr-load-content)
     (message
      (if hidden-p
-	 "show hidden"
+         "show hidden"
        "hide hidden"))))
 
 (defun emcfmgr-left-arrow-handler ()
@@ -113,12 +113,12 @@
   (interactive)
   (if (> margin-shift 0)
       (let ((point-backup (point)))
-	(setq margin-shift (- margin-shift 1))
-	(message "left")
-	(emcfmgr-load-content)
-	(goto-char point-backup)
-	(beginning-of-line)
-	(search-forward " | " (line-end-position) t nil))))
+        (setq margin-shift (- margin-shift 1))
+        (message "left")
+        (emcfmgr-load-content)
+        (goto-char point-backup)
+        (beginning-of-line)
+        (search-forward " | " (line-end-position) t nil))))
 
 (defun emcfmgr-right-arrow-handler ()
   "handle \"right arrow\" key press"
@@ -144,17 +144,19 @@
     )
   )
 
-(defun emcfmgr-make-buffer ()
-  "Create new buffer \"panel2\" and insert files name into this buffer"
-  (let ((buffer-back (current-buffer)))
-    (progn
-      (switch-to-buffer (get-buffer-create "panel2"))
-      ;; (erase-buffer)
-      ;; (emcfmgr-insert-list-files (directory-files default-directory))
-      (emcfmgr-make-variables)
-      (emcfmgr-load-content)
-      (emcfmgr-activate-key-handlers)
-      (switch-to-buffer buffer-back))))
+(defun emcfmgr-make-instance ()
+  "Create new buffer \"emsfmgr...\" and insert files name into this buffer"
+  (let ((buffer-back (current-buffer))
+        (number (emcfmgr-count-emc-instances))
+        (make-emc-buffer
+         (lambda (name)
+           (progn
+             (switch-to-buffer (get-buffer-create (concat "emcfmgr-" name "-" (number-to-string number))))
+             (emcfmgr-make-variables)
+             (emcfmgr-load-content)
+             (emcfmgr-activate-key-handlers)
+             (switch-to-buffer buffer-back)))))
+    (mapc make-emc-buffer '("left" "right"))))
 
 (defun emcfmgr-load-content ()
   (progn
@@ -181,6 +183,34 @@
     (setq left-margin 0)))
 
 
+(defun emcfmgr-count-emc-instances ()
+  "get number of working mecfmgr instances"
+  (let ((buffers (buffer-list)))
+    (max (emcfmgr-count-left-panels buffers)
+         (emcfmgr-count-right-panels buffers))))
 
-(emcfmgr-make-buffer)
-  
+(defun emcfmgr-count-left-panels (buffers)
+  (let ((check (lambda (buffer)
+                 (if (null (string-match "emcfmgr-left-[0-9]+" (buffer-name buffer)))
+                     0
+                   1))))
+    (if (null (cdr buffers))
+        (funcall check (car buffers))
+      (+ (funcall check (car buffers)) (emcfmgr-count-left-panels (cdr buffers))))))
+
+(defun emcfmgr-count-right-panels (buffers)
+  (let ((check (lambda (buffer)
+                 (if (null (string-match "emcfmgr-right-[0-9]+" (buffer-name buffer)))
+                     0
+                   1))))
+    (if (null (cdr buffers))
+        (funcall check (car buffers))
+      (+ (funcall check (car buffers)) (emcfmgr-count-right-panels (cdr buffers))))))
+
+
+(emcfmgr-count-emc-instances)
+
+
+
+
+(emcfmgr-make-instance)
