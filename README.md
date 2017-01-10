@@ -14,9 +14,8 @@ Panel file manager for emacs like Midnight Commander
 
 
 LAST:
-0.3
-Make owner attribute field of fixed length
-
+Start making copy functionality
++ function to get remote panel path
 
 HISTORY:
 
@@ -25,3 +24,6 @@ HISTORY:
 
 0.2
 - creating instance "left" and "right" buffers with identical names for each instance
+
+0.3
+Make owner attribute field of fixed length

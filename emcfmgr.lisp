@@ -155,6 +155,7 @@
     (local-set-key (kbd "<return>") 'emcfmgr-enter-key-handler)
     (local-set-key (kbd "RET") 'emcfmgr-enter-key-handler)
     (local-set-key (kbd "h") 'emcfmgr-h-key-handler)
+    (local-set-key (kbd "c") 'emcfmgr-c-key-handler)
     )
   )
 
@@ -221,10 +222,42 @@
         (funcall check (car buffers))
       (+ (funcall check (car buffers)) (emcfmgr-count-right-panels (cdr buffers))))))
 
+(defun emcfmgr-c-key-handler ()
+  "\"c\" key handler"
+  (interactive)
+  (emcfmgr-cp-file (search-forward " | " (line-end-position) t nil)))
 
-(emcfmgr-count-emc-instances)
+(defun emcfmgr-cp-file (file-name)
+  (message (emc-other-panel-path)))
+
+(defun emc-other-panel-path ()
+  (let ((buffer-back (current-buffer))
+        (get-default-dir (lambda (side)
+                           (progn
+                             (switch-to-buffer
+                              (get-buffer (concat "emcfmgr-" side "-"
+                                                  (number-to-string (emc-current-instance-number)))))
+                             default-directory))))
+    (let ((return-value (if (emc-is-left-panel-p)
+                            (funcall get-default-dir "right")
+                          (funcall get-default-dir "left"))))
+      (switch-to-buffer buffer-back)
+      return-value)))
 
 
 
+(defun emc-current-instance-number ()
+  (interactive)
+  (progn (string-match "emcfmgr-\\w+-\\(.*\\)" (buffer-name))
+         (string-to-number (match-string 1 (buffer-name)))))
+
+;;(progn
+;;  (string-match "emcfmgr-\\w+-\\(.*\\)" "emcfmgr-left-1")
+;;  (string-to-number (match-string 1 "emcfmgr-left-1")))
+
+(defun emc-is-left-panel-p ()
+  (if (null (string-match "emcfmgr-left-[0-9]+" (buffer-name)))
+      nil
+    t))
 
 (emcfmgr-make-instance)
